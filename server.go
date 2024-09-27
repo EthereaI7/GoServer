@@ -30,7 +30,7 @@ func NewServer(ip string, port int) *Server {
 }
 
 // a routine for spy on Broadcast channel, send msg to all users once Message != nil
-func (this *Server) ListenMessager() {
+func (this *Server) Broadcast() {
 	for {
 		msg := <-this.Message
 
@@ -43,7 +43,7 @@ func (this *Server) ListenMessager() {
 	}
 }
 
-func (this *Server) Broadcast(user *User, msg string) {
+func (this *Server) UserInfoEnQueue(user *User, msg string) {
 	sendMsg := "[" + user.Addr + "]" + user.Name + ": " + msg
 	this.Message <- sendMsg
 }
@@ -56,8 +56,8 @@ func (this *Server) Handler(conn net.Conn) {
 	this.OnlineMap[user.Name] = user
 	this.mapLock.Unlock()
 
-	//broadcast this online msg
-	this.Broadcast(user, "get online")
+	//put users' info into this.Message
+	this.UserInfoEnQueue(user, "get online")
 
 }
 
@@ -73,7 +73,7 @@ func (this *Server) Start() {
 	defer listener.Close()
 
 	//Messager routine
-	go this.ListenMessager()
+	go this.Broadcast()
 
 	for {
 		//accept
