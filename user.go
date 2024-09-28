@@ -85,7 +85,7 @@ func (this *User) DoMessage(msg string) {
 			this.Name = newName
 			this.SendMsg("rename success: " + this.Name + "\n")
 		}
-	} else if len(msg) > 4 && msg[:3] == "to|" {
+	} else if len(msg) > 3 && msg[:3] == "to|" {
 		//send private message
 		remoteName := strings.Split(msg, "|")[1]
 		if remoteName == "" {
