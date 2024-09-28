@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"io"
 	"net"
 	"sync"
 )
@@ -57,7 +58,25 @@ func (this *Server) Handler(conn net.Conn) {
 	this.mapLock.Unlock()
 
 	//put users' info into this.Message
-	this.UserInfoEnQueue(user, "get online")
+	this.UserInfoEnQueue(user, "online")
+
+	go func() {
+		buf := make([]byte, 4096)
+		for {
+			n, err := conn.Read(buf)
+			if n == 0 {
+				this.UserInfoEnQueue(user, "offline")
+				return
+			}
+			if err != nil && err != io.EOF {
+				fmt.Println("Conn err", err)
+				return
+			}
+
+			msg := string(buf[:n-1])
+			this.UserInfoEnQueue(user, msg)
+		}
+	}()
 
 }
 
