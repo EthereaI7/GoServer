@@ -66,7 +66,7 @@ func (this *User) DoMessage(msg string) {
 	if msg == "who" {
 		this.server.mapLock.Lock()
 		for _, user := range this.server.OnlineMap {
-			onlineMsg := "[" + user.Addr + "]" + user.Name + ":online...\n"
+			onlineMsg := "[" + user.Addr + "]" + user.Name + ":online\n"
 			this.SendMsg(onlineMsg)
 		}
 		this.server.mapLock.Unlock()
