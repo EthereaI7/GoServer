@@ -81,7 +81,7 @@ func (this *Server) Handler(conn net.Conn) {
 		case <-isLive:
 			//current user is alive, reset timer
 
-		case <-time.After(time.Second * 10): //every select will create a new time channel of 10s
+		case <-time.After(time.Second * 100): //every select will create a new time channel of 10s
 			//timeout, kick user
 			user.SendMsg("timeout, you are kicked out")
 			close(user.C)

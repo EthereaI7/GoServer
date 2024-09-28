@@ -85,6 +85,28 @@ func (this *User) DoMessage(msg string) {
 			this.Name = newName
 			this.SendMsg("rename success: " + this.Name + "\n")
 		}
+	} else if len(msg) > 4 && msg[:3] == "to|" {
+		//send private message
+		remoteName := strings.Split(msg, "|")[1]
+		if remoteName == "" {
+			this.SendMsg("message format error! format: to|someone|msg\n")
+			return
+		}
+
+		remoteUser, ok := this.server.OnlineMap[remoteName]
+		if !ok {
+			this.SendMsg("user does not exist!\n")
+			return
+		}
+
+		content := strings.Split(msg, "|")[2]
+		if content == "" {
+			this.SendMsg("message format error! format: to|someone|msg\n")
+			return
+		}
+
+		remoteUser.SendMsg("(Private chat)" + this.Name + ": " + content + "\n")
+
 	} else {
 		this.server.UserInfoEnQueue(this, msg)
 	}
