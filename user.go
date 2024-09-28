@@ -1,6 +1,9 @@
 package main
 
-import "net"
+import (
+	"net"
+	"strings"
+)
 
 type User struct {
 	Name string
@@ -33,7 +36,7 @@ func (this *User) ListenMessage() {
 	}
 }
 
-//user online
+// user online
 func (this *User) Online() {
 	//user online, add to OnlineMap
 	this.server.mapLock.Lock()
@@ -44,7 +47,7 @@ func (this *User) Online() {
 	this.server.UserInfoEnQueue(this, "online")
 }
 
-//user offline
+// user offline
 func (this *User) Offline() {
 	this.server.mapLock.Lock()
 	delete(this.server.OnlineMap, this.Name)
@@ -58,7 +61,7 @@ func (this *User) SendMsg(msg string) {
 	this.conn.Write([]byte(msg))
 }
 
-//user deal with message
+// user deal with message
 func (this *User) DoMessage(msg string) {
 	if msg == "who" {
 		this.server.mapLock.Lock()
@@ -67,6 +70,21 @@ func (this *User) DoMessage(msg string) {
 			this.SendMsg(onlineMsg)
 		}
 		this.server.mapLock.Unlock()
+	} else if len(msg) > 7 && msg[:7] == "rename|" {
+		//rename
+		newName := strings.Split(msg, "|")[1]
+		_, ok := this.server.OnlineMap[newName]
+		if ok {
+			this.SendMsg("this username is already used!\n")
+		} else {
+			this.server.mapLock.Lock()
+			this.server.OnlineMap[newName] = this
+			delete(this.server.OnlineMap, this.Name)
+			this.server.mapLock.Unlock()
+
+			this.Name = newName
+			this.SendMsg("rename success: " + this.Name + "\n")
+		}
 	} else {
 		this.server.UserInfoEnQueue(this, msg)
 	}
