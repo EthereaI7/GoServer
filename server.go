@@ -50,22 +50,16 @@ func (this *Server) UserInfoEnQueue(user *User, msg string) {
 }
 
 func (this *Server) Handler(conn net.Conn) {
-	user := NewUser(conn)
+	user := NewUser(conn, this)
 
-	//user online, add to OnlineMap
-	this.mapLock.Lock()
-	this.OnlineMap[user.Name] = user
-	this.mapLock.Unlock()
-
-	//put users' info into this.Message
-	this.UserInfoEnQueue(user, "online")
+	user.Online()
 
 	go func() {
 		buf := make([]byte, 4096)
 		for {
 			n, err := conn.Read(buf)
 			if n == 0 {
-				this.UserInfoEnQueue(user, "offline")
+				user.Offline()
 				return
 			}
 			if err != nil && err != io.EOF {
@@ -74,7 +68,7 @@ func (this *Server) Handler(conn net.Conn) {
 			}
 
 			msg := string(buf[:n-1])
-			this.UserInfoEnQueue(user, msg)
+			user.DoMessage(msg)
 		}
 	}()
 
